@@ -1,9 +1,21 @@
 import React from 'react'
+import Link from 'gatsby-link'
+
+import FontAwesome from '../components/fontawesome'
 
 const NotFoundPage = () => (
-  <div>
-    <h1>NOT FOUND</h1>
-    <p>You just hit a route that doesn&#39;t exist... the sadness.</p>
+  <div className="text-center">
+    <h1 className="text-danger">
+      <FontAwesome icon="times" />
+    </h1>
+    <h2 className="mb-4">Not Found</h2>
+    <p>
+      The page you're trying to access doesn't exist or is no longer available.
+    </p>
+    <p>
+      If you think this is an error, please <Link to="/contact">contact</Link>{' '}
+      me.
+    </p>
   </div>
 )
 

@@ -1,0 +1,115 @@
+@import './fonts';
+
+// Bootstrap variables to change
+$font-size-base: 1.15rem;
+$enable-rounded: false;
+$container-max-widths: (
+  sm: 405px,
+  md: 540px,
+  lg: 720px,
+  xl: 855px
+) !default;
+
+// Vendor imports
+@import '~bootstrap/scss/bootstrap.scss';
+@import '~prismjs/themes/prism-tomorrow.css';
+@import '~katex/dist/katex.min.css';
+
+.serif {
+  font-family: 'Crimson Text', serif !important;
+}
+
+.footer {
+  @extend .container;
+  @extend .mt-4;
+  @extend .pt-4;
+  @extend .pb-4;
+  @extend .text-muted;
+  @extend .small;
+}
+
+.post {
+  @extend .serif;
+
+  font-size: 1.5rem;
+}
+
+/*
+  We make the FA5 definitions here since this make it
+  scalable to upgrade versions in the future. If we take
+  fontawesome-all.css, we'd need to change the path each
+  time we need the iconset.
+
+  Making it this way, we just upgrade fontawesome.css and
+  then all the font files on the respective folder.
+*/
+.sr-only {
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.sr-only-focusable:active,
+.sr-only-focusable:focus {
+  clip: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  position: static;
+  width: auto;
+}
+@font-face {
+  font-family: 'Font Awesome 5 Brands';
+  font-style: normal;
+  font-weight: normal;
+  src: url('./fonts/fa-brands-400.eot');
+  src: url('./fonts/fa-brands-400.eot?#iefix') format('embedded-opentype'),
+    url('./fonts/fa-brands-400.woff2') format('woff2'),
+    url('./fonts/fa-brands-400.woff') format('woff'),
+    url('./fonts/fa-brands-400.ttf') format('truetype'),
+    url('./fonts/fa-brands-400.svg#fontawesome') format('svg');
+}
+
+.fab {
+  font-family: 'Font Awesome 5 Brands';
+}
+@font-face {
+  font-family: 'Font Awesome 5 Free';
+  font-style: normal;
+  font-weight: 400;
+  src: url('./fonts/fa-regular-400.eot');
+  src: url('./fonts/fa-regular-400.eot?#iefix') format('embedded-opentype'),
+    url('./fonts/fa-regular-400.woff2') format('woff2'),
+    url('./fonts/fa-regular-400.woff') format('woff'),
+    url('./fonts/fa-regular-400.ttf') format('truetype'),
+    url('./fonts/fa-regular-400.svg#fontawesome') format('svg');
+}
+
+.far {
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'Font Awesome 5 Free';
+  font-style: normal;
+  font-weight: 900;
+  src: url('./fonts/fa-solid-900.eot');
+  src: url('./fonts/fa-solid-900.eot?#iefix') format('embedded-opentype'),
+    url('./fonts/fa-solid-900.woff2') format('woff2'),
+    url('./fonts/fa-solid-900.woff') format('woff'),
+    url('./fonts/fa-solid-900.ttf') format('truetype'),
+    url('./fonts/fa-solid-900.svg#fontawesome') format('svg');
+}
+
+.fa,
+.fas {
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+}
+
+@import './fontawesome.scss';
