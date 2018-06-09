@@ -34,6 +34,21 @@ $container-max-widths: (
   font-size: 1.5rem;
 }
 
+.gatsby-highlight {
+  font-size: 0.75em !important;
+}
+
+code.language-text {
+  @extend .pl-1;
+  @extend .pr-1;
+
+  font-size: 0.65em !important;
+}
+
+.katex {
+  font-size: 0.9em !important;
+}
+
 /*
   We make the FA5 definitions here since this make it
   scalable to upgrade versions in the future. If we take

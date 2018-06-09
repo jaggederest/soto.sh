@@ -11,5 +11,5 @@ services:
     ports:
       - ${PORT:-8000}:8000
     volumes:
-      - ../site:/application
+      - ../:/application
     working_dir: /application
