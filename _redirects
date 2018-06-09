@@ -1,0 +1,11 @@
+# Redirect default Netlify subdomain to primary domain
+http://spsoto.netlify.com/* https://sebastian.soto.sh/:splat 301!
+https://spsoto.netlify.com/* https://sebastian.soto.sh/:splat 301!
+http://soto.sh/* https://sebastian.soto.sh/:splat 301!
+https://soto.sh/* https://sebastian.soto.sh/:splat 301!
+http://www.soto.sh/* https://sebastian.soto.sh/:splat 301!
+https://www.soto.sh/* https://sebastian.soto.sh/:splat 301!
+http://www.spsoto.cl/* https://sebastian.soto.sh/:splat 301!
+https://www.spsoto.cl/* https://sebastian.soto.sh/:splat 301!
+http://spsoto.cl/* https://sebastian.soto.sh/:splat 301!
+https://spsoto.cl/* https://sebastian.soto.sh/:splat 301!
