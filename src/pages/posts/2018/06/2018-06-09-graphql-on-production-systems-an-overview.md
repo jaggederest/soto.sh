@@ -1,7 +1,7 @@
 ---
-path: "/posts/2018/06/09/things-you-might-dislike-about-graphql"
+path: "/posts/2018/06/09/graphql-on-production-systems-an-overview"
 date: "2018-06-09"
-title: "Things You Might Dislike About GraphQL"
+title: "GraphQL On Production Systems: An Overview"
 tags: ["GraphQL"]
 ---
 
