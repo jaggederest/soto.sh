@@ -155,7 +155,7 @@ const CV = () => (
       </h3>
 
       <Experience
-        from="Jul 2017"
+        from="Jun 2017"
         logo={ubiome}
         title="Software Engineer"
         institution={
@@ -222,8 +222,8 @@ const CV = () => (
       />
 
       <Experience
-        from="Sep 2016"
-        to="Jun 2017"
+        from="Jul 2016"
+        to="Jul 2017"
         logo={coddde}
         title="Junior Software Engineer"
         institution={
