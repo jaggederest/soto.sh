@@ -260,7 +260,7 @@ easily represented as a small micro-service.
 
 <img src="graphql-motivation-er.svg" alt="Entity Relationship Diagram" class="img-fluid" />
 
-Given this entity, let's discuss the implementation of a GraphQL backend that
+Given these entitities, let's discuss the implementation of a GraphQL backend that
 enables us to implement it and perform the most relevant queries for our frontend.
 
 ## The Naive Implementation
@@ -994,7 +994,7 @@ This conceptual discussion is the underlying motivation on creating a backend
 framework that:
 
 - Is **entirely** decoupled from the application and transport layer involved
-  in the invocation of `graphql`. This should ** smoothly** work on ExpressJS, Koa
+  in the invocation of `graphql`. This should **smoothly** work on ExpressJS, Koa
   or even through WebSockets.
 
 - Easily composes and builds schemas and root values from multiple files and small
