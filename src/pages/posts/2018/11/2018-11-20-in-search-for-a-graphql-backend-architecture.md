@@ -106,7 +106,7 @@ schema {
 
 The obvious **query** is then:
 
-```
+```graphql
 {
   myValue
 }
