@@ -39,11 +39,12 @@ exports.createPages = async ({ actions, graphql }) => {
       path: node.frontmatter.path,
       component: PostTemplate,
       context: {
-        previous: previous && {
+        // Swap them because the query is in DESC order.
+        next: previous && {
           path: previous.node.frontmatter.path,
           title: previous.node.frontmatter.title,
         },
-        next: next && {
+        previous: next && {
           path: next.node.frontmatter.path,
           title: next.node.frontmatter.title,
         },

@@ -41,6 +41,8 @@ $container-max-widths: (
 code.language-text {
   @extend .pl-1;
   @extend .pr-1;
+  @extend .bg-light;
+  @extend .text-danger;
 
   font-size: 0.65em !important;
 }
