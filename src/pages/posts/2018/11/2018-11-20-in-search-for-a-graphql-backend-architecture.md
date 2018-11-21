@@ -5,41 +5,41 @@ title: "In Search For A GraphQL Backend Architecture"
 tags: ["GraphQL", "Architecture", "Services", "Data Layer", "TypeScript"]
 ---
 
-A few months ago I wrote an article about my architectural concerns about how to
+A few months ago I wrote an article on my architectural concerns about how to
 deal with many of the issues that arise on a GraphQL production system. My work
-on this topic continued on the next months and I was able to put a working system
-on a not high-volume but highly critical production system.
+on this topic continued over the next few months and I was able to build a working system
+in a low-volume but highly critical production system.
 
-After my learnings with building this system, I was able to create a mature mental
-image about how a GraphQL data layer that pulls data from multiple databases and
-services at the same time should work and decided to start the development of a
-small Typescript microframework that leveraged the use of this concepts.
+From what I learned by building this system, I was able to create a mature mental
+model about how a GraphQL data layer that pulls data from multiple databases and
+services at the same time should work, and decided to start the development of a
+small Typescript microframework that leveraged the use of these concepts.
 
 <hr>
 
-This article has the objective of presenting a motivating example for creating such
+The goal of this article is to present a motivating example for creating a
 GraphQL framework that simplifies the workload of creating data layer backends
 for services architectures.
 
 Throughout this article, we will discuss the implementation of a data layer
-of a straightforward blog system that has three entities: `Post`, `Comment` and `User`.
+for a straightforward blog system that has three entities: `Post`, `Comment` and `User`.
 
-We'll follow a deductive approach where we introduce prior knowledge and after
-finding issues we propose solutions. After this, we'll present the conclusions and
-present a brief introduction to the characteristics of what we need in our
+We'll follow a deductive approach where we introduce prior knowledge, and after
+finding issues we propose solutions. At the end, we'll present the conclusions and
+provide a brief introduction to the characteristics needed in our
 framework.
 
 ## Prior Knowledge
 
-Before starting, we must visit what's available right now for working with
+Before starting, we'll touch on what's available right now for working with
 GraphQL backends.
 
 ### GraphQL
 
-It's expected that the reader is at least familiar with the GraphQL notation
-and some knowledge about how to write a query. The [official documentation](https://graphql.org)
+In the rest of this document, we assume the reader is at least familiar with the GraphQL notation
+and has some knowledge of how to go about writing a query. The [official documentation](https://graphql.org)
 and [this cheatsheet](https://wehavefaces.net/graphql-shorthand-notation-cheatsheet-17cd715861b6)
-as a handbook until you memorize the notation.
+are useful as a reference until you memorize the notation.
 
 ### GraphQL.js
 
@@ -48,14 +48,13 @@ GraphQL, and can be though as the reference implementation since most of the RFC
 to the protocol usually end up being implemented in this library first.
 
 Under the hood, this library provides a function called `graphql` which accepts
-and schema, an object with functions, the query, and its variables and returns
+a schema, an object with functions, the query, and its variables; and returns
 the resolved JSON data object.
 
-No assumptions about the application layer. No assumptions about the transport
-layer. There are no assumptions even about the platform! You're perfectly capable
-of running this library on the browser with little trouble whatsoever.
+No assumptions are made about the application or transport layer, or even the platform!
+This library is perfectly capable  of running in the browser with very little trouble at all.
 
-However, beware that this library provides a whole package of features for parsing
+However, be aware that this library provides a whole package of features for parsing
 queries, dealing with errors, **building schema objects from GraphQL files**, among
 others.
 
@@ -82,17 +81,17 @@ graphql(
 Here:
 
 - `schema` is the **parsed schema** (as a JS object). You can create this JS object
-  from a GraphQL schema string just by invoking `buildSchema(schemaString)` [[2](https://graphql.org/graphql-js/utilities/#buildschema)].
+  from a GraphQL schema string by invoking `buildSchema(schemaString)` [[2](https://graphql.org/graphql-js/utilities/#buildschema)].
 - `requestString` is the GraphQL **query string** we want to run against the schema.
 - `rootValue` is the root value passed to the executor.
-- `contextValue`, which is going to be passed to all resolving functions (more later).
-- `variableValues`, values of all the values present on the `queryString`.
+- `contextValue`, will be passed to all resolving functions (more later).
+- `variableValues`, values for each of the variables present in the `queryString`.
 - `operationName`, the name of the operation, if any.
 
 ### How GraphQL.JS Resolves a Request
 
-Let's completely forget for a second about a web server and any implementation
-the detail and let's consider the following GraphQL **schema**:
+Let's completely forget for a second about the web server and any implementation
+detail and consider the following GraphQL **schema**:
 
 ```graphql
 type Query {
@@ -124,8 +123,8 @@ const rootValue = {
 ```
 
 and pass it to the `graphql` definition above. This provides the benefit that
-is statically typed. However, what happens if we wanted to provide a harder
-to compute or a dynamic value based on the current session? You can solve this...
+is statically typed. However, what happens if we want to provide a difficult
+to compute or dynamic value based on the current session? You can solve this...
 
 **By passing a function.** Instead, we can do:
 
@@ -137,7 +136,7 @@ const rootValue = {
 }
 ```
 
-This way, the value is **thunked** and this function is going to be called every
+This way, the value is **thunked** and this function will be called every
 time the value is requested on the query. This is not an implication but an equivalence:
 if the value is not requested then the function **won't be called**.
 
@@ -147,10 +146,10 @@ Moreover, this function can accept arguments:
 myValue(args, context, ast)
 ```
 
-where `args` is an object of arguments if `myValue` was implemented as GraphQL
-function in the schema definition, `context` is the context defined on the API
-on top and `ast` is an [Abstract Syntax Tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree),
-i.e. an in-memory JS representation of the currently parsed `requestString`.
+where `args` is an object containing the arguments if `myValue` was implemented as GraphQL
+function in the schema definition, `context` is the context defined by the API
+above, and `ast` is an [Abstract Syntax Tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree)
+i.e. an in-memory JS representation of the current parsed `requestString`.
 
 **By passing a promise.** For fully exploiting the possibilities of modern
 asynchronous JavaScript, `myValue` can also be a promise:
@@ -174,7 +173,7 @@ the same tick of the event loop.**
 created by Facebook and meant to be used as a data fetching layer. It's used for
 **batching** requests, i.e. given some resource IDs that need to be fetched
 across a concurrent program flow, consolidate them together on a single list of
-IDs, perform a single data request and pass back the results where requested on
+IDs, perform a single data request and pass back the results where requested into
 the program flow.
 
 The API is extremely simple:
@@ -185,7 +184,7 @@ const Dataloader = require("dataloader")
 
 To create a loader, we need to provide a batch function that receives
 a list of **scalars** (objects **won't work**) and returns a Promise that resolves
-a list of results where each position matches the requested scalar id.
+to a list of results where each position matches the requested scalar id.
 
 As an example, if we pass `[1, 7, 3]` to our batch function, then we need to
 return `[/* Result 1 */, /* Result 7 */, /* Result 3 */]` **even if the results
@@ -219,15 +218,15 @@ Promise.all([
 
 The created loader halts the execution until the next tick of the event loop for
 each promise, which in this example happens just after all functions have been
-invoked and the code is no longer blocking. This gives time to consolidate all
+invoked and the code is no longer blocking. This gives time to consolidate all of the
 requests that are required for the next tick of the event loop.
 
-Then, `Dataloader` consolidates them on a single list, creates a `Map` and calls
-`myBatchFunction` just once with the requested IDs as can be seen on the request,
-and then passes back the results to each one of the calls.
+`Dataloader` then consolidates them into a single list, creates a `Map`, and calls
+`myBatchFunction` just once with the requested IDs as can be seen on the request.
+It then passes back the results to each of the calls.
 
 DataLoader also implements a **short-lived** cache for the requested IDs, which
-means that if you invoke `myLoader.load(4)` or `myLoader.load(2)` again throughout
+means that if you invoke `myLoader.load(4)` or `myLoader.load(2)` again in
 your program flow with this loader instance, `myBatchFunction` won't be called again
 since the result is already saved in memory.
 
@@ -248,35 +247,35 @@ It's clear from the previous examples that a solid understanding of ESNext JS
 features are required to write idiomatic and concise code that deals
 with concurrency.
 
-JS Concurrency is one of the key concepts to be able to efficiently
-work with GraphQL backends.
+JS Concurrency is one of the key concepts in efficiently
+working with GraphQL backends.
 
 ## The Motivating Example
 
 Let's focus now on our motivating example for the blog system. Let's start with
-this simple Entity-Relationship diagram. Do not assume that this is implemented
-on a SQL database let alone on a single system. Each of the resources can be
+this simple Entity-Relationship diagram. We're not assuming that this is implemented
+in a SQL database, or even a single system. Each of the resources can be
 easily represented as a small micro-service.
 
 <img src="graphql-motivation-er.svg" alt="Entity Relationship Diagram" class="img-fluid" />
 
 Given these entitities, let's discuss the implementation of a GraphQL backend that
-enables us to implement it and perform the most relevant queries for our frontend.
+enables us to use it to perform the most relevant queries for our frontend.
 
 ## The Naive Implementation
 
-Throughout this section, we'll start thinking step by step how to implement this
-backend, encounter issues and find workarounds to resolve them.
+Throughout this section, we'll walk through step by step how to implement this
+backend, and resolve the issues we encounter by finding workarounds.
 
-Leaving the backend implementation aside, we'll just focus on implementing a `schema`
+Leaving the data storage implementation aside, we'll just focus on implementing a `schema`
 and `rootValue` that can resolve a single `requestQuery` by invoking `graphql`.
 Moving this then to an HTTP server or even a WebSockets implementation is completely
-decoupled of what we are doing in this article and should be pretty much
+decoupled from what we are doing in this article and should be fairly
 straightforward.
 
 ### The Schemas
 
-Let's discuss the type definitions we need to implement to create a GraphQL backend:
+Let's discuss the type definitions we need to implement for our GraphQL backend:
 
 **`Post`:** This is going to extend a little longer to illustrate many of the
 features for schema definition:
@@ -297,16 +296,16 @@ type Post {
   """
   title: String!
   """
-  These fields are non-nullable on the ER, so something really wrong is going on
+  These fields are non-nullable in the ER, so something really wrong is happening
   if these are null.
   """
   content: String!
   """
-  Idiomatic GraphQL usually comes in camelCase, not in snake_case.
+  Idiomatic GraphQL is formatted in camelCase, not in snake_case.
   """
   userId: Int!
   """
-  The lightweight way of sending a timestamp is the unix timestamp.
+  The lightweight way of sending a timestamp is to use the seconds after unix epoch as an integer.
   """
   createdAt: Int!
   """
@@ -314,21 +313,21 @@ type Post {
   """
   updatedAt: Int!
   """
-  Relations can be easily added by declaring them. User could possibly be not
-  found if there's a data inconsistency. In this case, it's better to declare
-  it as nullable.
+  Relations can be easily added just by declaring them. User might not be
+  found if there's a data inconsistency, so in this case, it's better to declare
+  it as nullable (no exclamation mark).
   """
   user: User
   """
-  This will be a function receiving the last `n` comments from the post. Return
-  an array of non-null elements. The array can be nullable, each element inside
+  This will be a function receiving the last `n` comments from the post which returns
+  an array of non-null elements. The array is nullable, but each element inside is
   not.
   """
   comments(last: Int! = 5): [Comment!]
 }
 ```
 
-**`Comment`:** Based on guidelines on top:
+**`Comment`:** Based on guidelines above:
 
 ```graphql
 type Comment {
@@ -341,7 +340,7 @@ type Comment {
 }
 ```
 
-**`User`:** Likewise:
+**`User`:** 
 
 ```graphql
 type User {
@@ -352,7 +351,7 @@ type User {
   createdAt: Int!
   updatedAt: Int!
   """
-  You can also provide extra computed properties. GraphQL schemas are not coupled
+  You can also include extra computed properties. GraphQL schemas are not coupled
   to the data source.
   """
   fullName: String!
@@ -380,11 +379,11 @@ schema {
 }
 ```
 
-For a single and small project, we can just concatenate all these schemas on a single
-string and call `buildSchema` with it as an argument. **However, we need an
-horizontal way to split this on multiple files for bigger projects.**
+For one small project, we can just concatenate all these schemas into a single
+string and call `buildSchema` with it as an argument. **However, in a bigger project,
+we need a horizontal way to split this over multiple files.**
 
-We'll need to provide a `rootValue` to `graphql` with something close to this
+We'll need to provide a `rootValue` to `graphql` with something similar to this
 prototype:
 
 ```typescript
@@ -406,7 +405,7 @@ const rootValue = {
 
 ## Some Queries
 
-By trying to expand some queries we will start implementing this GraphQL Backend.
+By trying to expand some queries we can start fleshing out this GraphQL Backend.
 
 ### A Simple `Post` Query
 
@@ -434,14 +433,14 @@ const variableValues = {
 On a real program this would be part of the incoming request, usually as a request
 body.
 
-The GraphQL Engine is going to call `user({ id }, ctx, ast)` with `id = 2`. Given these
-values and wait for the Promise to resolve. It's clear then that we need to implement
+The GraphQL Engine is going to call `user({ id }, ctx, ast)` with `id = 2` given these
+values, and then wait for the Promise to resolve. It's clear that we need to implement
 this function, so let's consider an ORM/ODM model `Post`:
 
 ```typescript
 async function post({ id }) {
   // Returns fields defined in the E-R diagram on top as camelCase.
-  // However, you can put whatever you want here in order to resolve!
+  // However, you can put whatever you want here in order to resolve the contents!
   const post = await Post.findOne({ where: { id } })
 
   return post
@@ -449,8 +448,8 @@ async function post({ id }) {
 ```
 
 The engine will retrieve the returned `post`, extract `id`, `title` and `content`
-from it and send it back as a result. See here that `userId`, `createdAt` and `updatedAt`
-were not required, thus not sent and they can be simply considered as an overfetch
+from it and send it back as a result. We can see here that `userId`, `createdAt` and `updatedAt`
+were not required and thus were not sent: they can simply be considered an overfetch
 for this request.
 
 ### Requesting Two Posts At The Same Time
@@ -487,16 +486,16 @@ const variableValues = {
 }
 ```
 
-The GraphQL engine will be calling `async post({ id }, ctx, ast)` 2 times, **in
+The GraphQL engine will call `async post({ id }, ctx, ast)` 2 times, **in
 parallel**, passing `id = 3` to the first one and `id = 9` to the second one.
 
-If we kept our implementation of `post()` as made above, we'd be performing two
-function database calls for fulfilling this request. If the client needed 5
+If we kept our implementation of `post()` above, we'd be performing two
+function database calls to fulfill this request. If the client needed 5
 posts, then 5 calls would be made. It's clear that our naive `async post()`
-the implementation above won't work.
+implementation above won't work efficiently in these cases.
 
 However, since these functions calls are parallelized, **we can easily batch
-them!**. See this implementation of `post`:
+them!**. Here's a more comprehensive implementation of `post`:
 
 
 ```typescript
@@ -511,24 +510,24 @@ async function loadPostsById(ids) {
     }
   })
 
-  // For each request ID let's find the post in the results. This way, we keep
-  // the order of the results as required by DataLoader and even non-existing
-  // results are properly located. Beware that `Post` results can come unordered
-  // and not all requested ids might exist in the database.
+  // For each request ID we find the post in the results, which keeps
+  // the order of the results as required by DataLoader. Even non-existent
+  // results are properly located, but be aware that `Post` results might come in any order,
+  // and that not all requested ids necessarily exist in the database.
   //
   // This is O(n^2) and thus sub-optimal. We can increase spatial complexity to
-  // O(n) o resolve this in O(n) time. However, the purpose of this example
-  // is being illustrative enough.
+  // O(n) o resolve this in O(n) time. However, for the purpose of this example
+  // it's illustrative enough.
   return ids.map(id => // O(n)
     posts.find(post => post.id === id) // O(n)
   )
 }
 
-// DataLoader creates **short-lived** caches. This is NOT meant to live on the
+// DataLoader creates **short-lived** caches. This is NOT meant to live in the
 // program global scope on a production environment.
 const postsByIdLoader = new Dataloader(loadPostsById)
 
-// This implementation goes inside of rootValues.
+// This implementation goes into rootValues, implementing the interface as expected.
 async function post({ id }) {
   const post = await postsByIdLoader.load(id)
 
@@ -556,7 +555,7 @@ query getAuthor($id: ID!) {
 See here that `fullName` is not part of the E-R diagram and is declared as a field
 on the GraphQL schema.
 
-A basic implementation, using a loader, can be as follows:
+A basic implementation using a loader might be as follows:
 
 ```typescript
 async function loadUsersByIds(ids) {
@@ -572,7 +571,7 @@ async function loadUsersByIds(ids) {
   )
 }
 
-// Don't put this in the global scope in production.
+// Don't put this in the global scope in production, per above.
 const usersByIdLoader = new Dataloader(loadUsersByIds)
 
 async function user({ id }) {
@@ -580,24 +579,24 @@ async function user({ id }) {
   const user = await usersByIdLoader.load(id)
 
   return {
-    ...user, // All previously know columns
+    ...user, // All previously specified columns
     fullName: `${user.firstName} ${user.lastName}`
   }
 }
 ```
 
 The problem is that, if we don't need `fullName`, we'd still be computing it
-with this approach. This would especially problematic for expensive computations
-or when you have multiple computed properties.
+with this approach. It would be especially problematic for expensive computations
+or when there are multiple computed properties.
 
-Once again, **GraphQL.JS allows you to put the responses under functions and/or
-promises**. In this case, when `user` returns, the engine will know that it
-needs `fullName`. If we wrap `fullName` under a function, the engine will call it.
+Once again, **GraphQL.JS allows you to wrap the responses in functions and/or
+promises**. For this example, when `user` returns, the engine will know that it
+needs `fullName`. If we wrap `fullName` in a function, the engine will call that function to retrieve the value.
 You can even put `fullName` wrapped in an async function and the engine will
 call all the promises in parallel and wait for them to resolve.
 
 Since we just need to interpolate strings, there's no need for an async function
-in this case and we can just wrap it on a function:
+in this case, so we will just wrap it with a normal function:
 
 ```typescript
 async function user({ id }) {
@@ -616,7 +615,7 @@ async function user({ id }) {
 ### Loading Data Relationships
 
 One of the most interesting examples here is when we need to load an entity
-and some of its relationships. Consider this query:
+plus some of its relationships. Consider this query:
 
 ```graphql
 query getFullPost($id: ID!) {
@@ -639,8 +638,8 @@ query getFullPost($id: ID!) {
 }
 ```
 
-Given that we already implemented `posts` above, we just need to extend it in
-order to make `author` and `comments` functions available. Otherwise, they'd
+Given that we have already implemented `posts` above, we just need to extend it in
+order to make `author` and `comments` functions available. Without this step, they'd
 just return null since they're undefined in the resolved object:
 
 ```typescript
@@ -659,10 +658,10 @@ async function post({ id }) {
 }
 ```
 
-Once again, the naive approach would be to just call the ORM and resolve the
-objects. However, if we pulled 5 posts instead of 1 in our root query, we'd be
-performing 5 `author` queries and 5 `comments` queries, that is, an `n+1` queries
-problem which is one of the most significant pain points in using GraphQL.
+Once again, the naive approach would be by calling the ORM and resolving the
+objects individually. If we pulled 5 posts instead of 1 in our root query, we'd
+perform 5 `author` queries and 5 `comments` queries. You probably know this as an `n+1` query
+ - one of the most significant pain points when using GraphQL.
 
 However, what happens if we put some loaders inside these definitions 😛? The
 GraphQL Engine would resolve as follows:
@@ -676,13 +675,13 @@ GraphQL Engine would resolve as follows:
     until the next tick of the event loop. Likewise for `comments`.
     
 4.  The loader for `author` consolidates all IDs in a single list and passes them
-    to the batch function. **Users will be loaded in a single query**. Same for
+    to the batch function. **Users will be loaded in a single query**, and the same for
     comments.
 
 5.  The loader passes back the results to each `author` call. The `author` then
     resolves the required result.
 
-Let's implement it then!
+Let's implement it!
 
 ```typescript
 async function post({ id }) {
@@ -702,7 +701,7 @@ async function post({ id }) {
       }
     },
     async comments() {
-      // You already get the idea. Let's not spend time in retrieving this
+      // You already get the idea. Let's not spend time retrieving this
       // right now.
       const comments = await lastFiveCommentsByPostIdLoader.load(post.id)
 
@@ -718,22 +717,22 @@ instead of `(n+1)^3` queries.
 Many important things to note here:
 
 1.  Once again, note that what you put inside the loader batch function is up
-    to you. You can put any database calls, HTTP API calls, gRPC calls, or even
-    just compute something of your taste.
+    to you. You can put any database calls, HTTP API calls, gRPC calls, or
+    just compute something else to your taste.
 
-2.  What you put on the `posts` loader can be utterly different from the
-    `users` loader. You can make an HTTP API call on `posts` and a gRPC call on
+2.  What you put in the `posts` loader can be utterly different from the
+    `users` loader. You can make an HTTP API call for `posts` and a gRPC call for
     `users` to a completely different service. This means that the **loader**
-    somewhat becomes your glue between many different documents.
+    essentially becomes the glue between many different documents.
 
-3.  Do not abuse batchers. You can easily shoot yourself in the foot if you try
+3.  Be careful not to abuse batchers. You can easily shoot yourself in the foot by trying
     to load 100 resources at a time. Everything you do should consider pagination.
-    Moreover, this is not a panacea or a replacement for SQL for complex queries.
+    Moreover, this is not a panacea, nor a replacement for SQL for complex queries.
     This is only meant to pull the data you need to populate your frontend.
 
-4.  There's no benefit in using a loader if you're still pulling each of the IDs.
-    If you're loading from a SQL database, you should try `IN` operators over
-    columns with indices or other more performant approaches. On an HTTP call
+4.  There's no benefit to using a loader if you're still pulling each of the IDs individually.
+    If you're loading from a SQL database, try `IN` operators over
+    columns with indices (or other more performant approaches). For a HTTP call
     you must provide an endpoint to load multiple items at once. On an Elastic
     cluster you might need to use `mget` to retrieve your results.
 
@@ -768,7 +767,7 @@ query getFullPost($id: ID!) {
 }
 ```
 
-We'd need to update our root value to do this by changing the `comments` function:
+We'll need to update our root value to do this by changing the `comments` function:
 
 ```typescript
 async function post({ id }) {
@@ -788,7 +787,7 @@ async function post({ id }) {
       }
     },
     async comments() {
-      // You already get the idea. Let's not spend time in retrieving this
+      // You already get the idea. Let's not spend time retrieving this
       // right now.
       const comments = await lastFiveCommentsByPostIdLoader.load(post.id)
 
@@ -811,8 +810,8 @@ async function post({ id }) {
 }
 ```
 
-You can see here that, since we need to resolve the name again, we duplicated the
-code. It's easy to see that we can wrap that on a synchronous function:
+You can see that since we need to resolve the name again, we duplicated the
+code. It's clear now that we can wrap that in a synchronous function:
 
 ```typescript
 function resolveUser(user) {
@@ -839,7 +838,7 @@ async function post({ id }) {
       return resolveUser(author)
     },
     async comments() {
-      // You already get the idea. Let's not spend time in retrieving this
+      // You already get the idea. Let's not spend time retrieving this
       // right now.
       const comments = await lastFiveCommentsByPostIdLoader.load(post.id)
 
@@ -856,9 +855,9 @@ async function post({ id }) {
 }
 ```
 
-But, this is going to be happening again for comments, for authors and for
-everything that we would need to re-use! We can do the same for posts and
-comments:
+But, this will happen again with comments, with authors and with
+everything that we would want to re-use! We can continue with posts and
+comments as follows:
 
 ```typescript
 function resolveComment(comment) {
@@ -881,7 +880,7 @@ function resolvePost(post) {
       return resolveUser(author)
     },
     async comments() {
-      // You already get the idea. Let's not spend time in retrieving this
+      // You already get the idea. Let's not spend time retrieving this
       // right now.
       const comments = await lastFiveCommentsByPostIdLoader.load(post.id)
 
@@ -901,8 +900,8 @@ async function post({ id }) {
 }
 ```
 
-All the logic for getting the comments and the author was encapsulated in this
-**resolver** function and is now reusable. If we have any node that has a `Post`
+All the logic for getting the comments and the author is encapsulated into this
+**resolver** function and is now reusable. If we have any other nodes that have a `Post`
 type as a child, we can just call this resolver and handling of `author` and
 `comments` will be immediately available.
 
@@ -910,16 +909,16 @@ Formally, a **resolver** function is a **synchronous** and **pure** (no side
 effects) that retrieves some attributes and return the object that the GraphQL
 Engine needs to resolve the requested information on the node.
 
-This is our essential component or re-usable unit and ensures that we don't have to
-deal with any possible combination that might be asked to the GraphQL Tree.
+This is the essential component or re-usable unit and ensures that we don't have to
+deal with any possible combination that might be asked of the GraphQL Tree.
 
-As a side-note, `author()` in `resolvePost` and `user()` in `resolveComment`
-have a quite similar behavior. Another high order function can be created, invoke
-it and pass it down to those keys.
+As a side-note, you might notice that `author()` in `resolvePost` and `user()` in `resolveComment`
+have very similar behavior. You might create another high order function, invoking
+it and passing it down to those keys.
 
 ## Summary
 
-Throughout our discussion, we've noticed that many of the issues that arise when
+Throughout our discussion, we've observed that some of the issues that arise when
 creating a GraphQL backend are:
 
 - Creating Schemas and Root Values. We need to find a way to split schemas and
@@ -929,7 +928,7 @@ creating a GraphQL backend are:
 
 - Keep things DRY. Given the results from the data source, get a re-usable unit
   that converts those results to an object that `GraphQL.js` can resolve. This
-  object has thunked methods to access other nodes in the graph.
+  object has thunked methods for accessing other nodes in the graph.
 
 We've just given conceptual solutions to all of these problems by providing:
 
@@ -937,17 +936,17 @@ We've just given conceptual solutions to all of these problems by providing:
     Graph schema.
 
 2.  **Loaders**: Objects built from functions with specific conditions that,
-    when called, batch all the requests in the execution, call a data source just
-    once, and pass back the results to the running functions on the GraphQL
+    when called, batch all the requests for execution, call a data source just
+    once, and pass results back to the running functions of the GraphQL
     engine.
 
 3.  **Resolvers**: Pure and synchronous functions that map the results from the
     loader and convert them to a reusable object that can be used by the GraphQL
     engine to query the node.
 
-These concepts are **the fundamentals** of an architecture to deal with GraphQL
+These concepts are **the fundamentals** of our architecture to deal with GraphQL
 backends, and (for lack of a better name) can be called the **Root - Loader -
-Resolver** Architecture (RLR), given that this is the way the data flows.
+Resolver** Architecture (RLR), since that is the way the data flows.
 
 You can also make some connections to a traditional MVC architecture:
 
@@ -955,81 +954,80 @@ You can also make some connections to a traditional MVC architecture:
   parameters, uses them to invoke a data source, and passes the data source to
   a view.
 
-- The Loader can be compared to a **Model** in the sense that pulls data from a
-  data source with a pre-defined structure and set of business rules.
+- The Loader can be compared to a **Model** in the sense that it pulls data from a
+  data source with a pre-defined structure and a set of business rules.
 
 - The Resolver can be compared to a **View** in the sense that receives information
   from a root value or another function and converts it to an object that can be
   used by the consumer (the `GraphQL.js` Engine).
 
-Also note that just like on a MVC architecture, these are just conceptual
-boundaries. Even though is not encouraged (and can even be an antipattern), you're
-still able to do both the Loader and the Resolver jobs on a single root value.
-Nothing is forcing an engineer to works this way more than the conceptual
+Also note that just like in an MVC architecture, these are just conceptual
+boundaries. Even though it is not encouraged (and can even be an antipattern), you're
+still able to do both the Loader and the Resolver jobs in a single root value.
+Nothing is forcing an engineer to work this way, it's more of a conceptual
 background.
 
 This architecture is good enough to solve most of the data layer problems on a
-traditional services environment with multiple data sources. Even though
-this architecture is meant to be used on a multi-services system, it still can be used
-on a traditional monolithic approach using just a single database. However,
-the overhead would be more significant in comparison to tools like Join Monster, Apollo
+traditional services environment with multiple data sources. Despite being meant for use in 
+a multi-services system, it could still be used
+in a traditional monolithic approach with just a single database; however,
+the overhead would significant compared to tools like Join Monster, Apollo
 Server or Prisma GraphQL.
 
-Finally, note that this pattern can be easily implemented in any Turing complete
-language. However, concurrent languages like JavaScript, Elixir or Golang would
-make it simpler to build idiomatic yet performant code. Not the same can be said
-about languages not initially meant for concurrency programming like Python or Ruby.
+Finally, note that this pattern could be easily implemented with any Turing complete
+language, but concurrent languages like JavaScript, Elixir or Golang
+make it simpler to build idiomatic and performant code. You might encounter more
+difficulty when using languages not including native syntax/interpreter support for concurrency programming, like Python or Ruby.
 
 ### Summarizing Diagram
 
-For the latest query, which is the most complicated one on this article, the
-execution that the GraphQL Engine is performing can be summarized on the following
-diagram (try to zooming in) and follow it from left to right:
+For the final and most complicated query in this article above, the 
+execution that the GraphQL Engine performs can be summarized in the following
+diagram (try to zooming in), from left to right:
 
 [<img src="graphql-motivation-flow.svg" alt="Summarizing Diagram" class="img-fluid" />](graphql-motivation-flow.svg)
 
-### What Do We Need On This Framework?
+### What Do We Need For This Framework?
 
-This conceptual discussion is the underlying motivation on creating a backend
+This discussion is the conceptual underpinning for creating a backend
 framework that:
 
 - Is **entirely** decoupled from the application and transport layer involved
-  in the invocation of `graphql`. This should **smoothly** work on ExpressJS, Koa
+  in the invocation of `graphql`. It should **smoothly** work on ExpressJS, Koa
   or even through WebSockets.
 
-- Easily composes and builds schemas and root values from multiple files and small
+- Easily composes to build schemas and root values from multiple files and small
   functions.
 
-- Provides loaders instances (1) on demand and (2) for each `graphql` call/request
+- Provides loader instances (1) on demand and (2) for each `graphql` call/request
   given the batching function.
 
-- Enables to idiomatically use resolvers. Automatically detect arrays and apply
-  the resolver unit to every function.
+- Enables us to idiomatically use resolvers, automatically detecting arrays and applying
+  the resolver to every function.
 
 - Leverages the use of static typing (i.e. TypeScript) to efficiently manage
-  a big scale project and keeps the use of singletons and mutable state as low
+  a large scale project, keeping the use of singletons and mutable state as low
   as possible.
 
-### Many Things Are Uncovered Yet
+### Remaining Considerations
 
-Indeed, many things are not covered in this article that are worthy of entire articles.
+Many things are not covered in this article that are worthy of entire articles themselves:
 
 - Even though this architecture is scalable and performant, you're still not
-  supposed to completely expose your GraphQL service on a production environment.
-  You're not supposed to allow any query since a malicious actor can easily
+  intended to completely expose your GraphQL service in a production environment.
+  Allowing any arbitrary query is risky since a malicious actor can easily
   break the entire infrastructure given intensive enough queries.
 
-- We've talked nothing about mutations yet many things can be said about them.
+- No discussion of mutations yet - they are an entire subject to themselves.
   The bottom line is that you can proxy these calls to the services or think about
   the mutations as orchestrated calls to multiple services at once. They are still
   just functions that you define in your `rootValues` object. However, it is clear
-  that the main purpose of GraphQL is to pull data, so that's the reason why most
-  of the emphasis has been made there.
+  that the main purpose of GraphQL is to pull data, so that's the reason why we've kept most
+  of the emphasis there.
 
 - Pagination in GraphQL is made by being compliant to the
   [Relay Cursors Connections Specification](https://facebook.github.io/relay/graphql/connections.htm).
-  This is a complicated enough topic that requires further explanations on a
-  separate topic.
+  This is a complicated enough topic that it requires further explanation separately.
  
 - How do deal with logging and tracing in this infrastructure?
 
@@ -1037,9 +1035,9 @@ Indeed, many things are not covered in this article that are worthy of entire ar
 
 <hr>
 
-Thank you for time reading this article. The framework that implements this
-motivational discussion is already created and I have even battle tested it on a
+Thank you for the time spent reading this article. The framework implementing the concepts covered in this
+motivational discussion has already been created and even battle tested in a
 real production environment. I am looking forward to open-sourcing it.
 
 This article for sure will become part of the architectural documentation of
-the framework.
+that framework.
