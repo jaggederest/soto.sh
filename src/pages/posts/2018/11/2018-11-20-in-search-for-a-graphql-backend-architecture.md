@@ -5,29 +5,29 @@ title: "In Search For A GraphQL Backend Architecture"
 tags: ["GraphQL", "Architecture", "Services", "Data Layer", "TypeScript"]
 ---
 
-A few months ago I wrote an article on my architectural concerns about how to
-deal with many of the issues that arise on a GraphQL production system. My work
-on this topic continued over the next few months and I was able to build a working system
+A few months ago I wrote an article about my architectural concerns relating to dealing
+with many of the issues that arise on a GraphQL production system. My work
+on this topic has continued over the next few months, and I have been able to build a working system
 in a low-volume but highly critical production system.
 
-From what I learned by building this system, I was able to create a mature mental
+From what I learned by building this system, I have created a mature mental
 model about how a GraphQL data layer that pulls data from multiple databases and
-services at the same time should work, and decided to start the development of a
+services at the same time should work, and started the development of a
 small Typescript microframework that leveraged the use of these concepts.
 
 <hr>
 
-The goal of this article is to present a motivating example for creating a
+The goal of this article is to present a motivating example of creating a
 GraphQL framework that simplifies the workload of creating data layer backends
 for services architectures.
 
 Throughout this article, we will discuss the implementation of a data layer
 for a straightforward blog system that has three entities: `Post`, `Comment` and `User`.
 
-We'll follow a deductive approach where we introduce prior knowledge, and after
-finding issues we propose solutions. At the end, we'll present the conclusions and
-provide a brief introduction to the characteristics needed in our
-framework.
+We'll follow a deductive approach where we introduce existing knowledge, expand on it,
+and after finding issues, follow up by proposing solutions. At the end, we'll present 
+the conclusions from this process and provide a brief summary of the characteristics 
+needed in our framework.
 
 ## Prior Knowledge
 
@@ -44,8 +44,8 @@ are useful as a reference until you memorize the notation.
 ### GraphQL.js
 
 [GraphQL.js](https://graphql.org/graphql-js/) is the official implementation of
-GraphQL, and can be though as the reference implementation since most of the RFCs
-to the protocol usually end up being implemented in this library first.
+GraphQL, and can be though of as the reference implementation, since most of the RFCs
+to the protocol end up being implemented in this library first.
 
 Under the hood, this library provides a function called `graphql` which accepts
 a schema, an object with functions, the query, and its variables; and returns
