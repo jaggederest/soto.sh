@@ -1,7 +1,7 @@
 ---
-path: "/posts/2018/11/20/in-search-of-a-graphql-backend-architecture"
+path: "/posts/2018/11/20/in-search-for-a-graphql-backend-architecture"
 date: "2018-11-20"
-title: "In Search Of a GraphQL Backend Architecture"
+title: "In Search For A GraphQL Backend Architecture"
 tags: ["GraphQL", "Architecture", "Services", "Data Layer", "TypeScript"]
 ---
 
