@@ -1,5 +1,4 @@
 import React from 'react'
-import Link, { withPrefix } from 'gatsby-link'
 import { Table } from 'reactstrap'
 
 import mat1610 from '../../attachments/puc/mat1610_compilado.pdf'

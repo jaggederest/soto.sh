@@ -16,13 +16,21 @@ const Footer = ({ siteTitle }) => (
             <FontAwesome icon="heart" />
           </span>{' '}
           and{' '}
-          <a href="https://www.gatsbyjs.org/" target="_blank">
+          <a
+            href="https://www.gatsbyjs.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Gatsby
           </a>{' '}
-          in Santiago, 🇨🇱.
+          in San Francisco, CA.
         </div>
         <div>
-          <a href="https://github.com/spsoto/soto.sh" target="_blank">
+          <a
+            href="https://github.com/spsoto/soto.sh"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <FontAwesome icon="code" className="mr-1" />See source code
           </a>.
         </div>

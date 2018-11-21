@@ -1,6 +1,9 @@
 import React from 'react'
+import { graphql } from 'gatsby'
 import Link from 'gatsby-link'
 import { kebabCase, uniq } from 'lodash'
+
+import MainLayout from '../layouts/main'
 
 const PostLink = ({ post }) => (
   <div className="serif mb-4">
@@ -12,7 +15,7 @@ const PostLink = ({ post }) => (
 )
 
 const IndexPage = ({
-  pathContext: { tag: currentTag } = {},
+  pageContext: { tag: currentTag } = {},
   data: {
     allMarkdownRemark: { edges },
   },
@@ -45,20 +48,26 @@ const IndexPage = ({
   )
 
   return (
-    <div>
-      <div className="text-center mb-4 small">
-        <Link to="/posts" className="ml-1 mr-1">
-          [All]
-        </Link>
-        {tags.map(tag => (
-          <Link key={tag} to={`/tags/${kebabCase(tag)}`} className="ml-1 mr-1">
-            {tag}
+    <MainLayout>
+      <div>
+        <div className="text-center mb-4 small">
+          <Link to="/posts" className="ml-1 mr-1">
+            [All]
           </Link>
-        ))}
+          {tags.map(tag => (
+            <Link
+              key={tag}
+              to={`/tags/${kebabCase(tag)}`}
+              className="ml-1 mr-1"
+            >
+              {tag}
+            </Link>
+          ))}
+        </div>
+        <h2 className="mb-4">{currentTag || 'All Posts'}</h2>
+        {posts}
       </div>
-      <h2 className="mb-4">{currentTag || 'All Posts'}</h2>
-      {posts}
-    </div>
+    </MainLayout>
   )
 }
 

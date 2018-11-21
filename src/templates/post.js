@@ -1,8 +1,10 @@
 import React, { Component } from 'react'
+import { graphql } from 'gatsby'
 import Link from 'gatsby-link'
 import { kebabCase } from 'lodash'
 import { Col, Row } from 'reactstrap'
 
+import MainLayout from '../layouts/main'
 import FontAwesome from '../components/fontawesome'
 
 const enhance = C =>
@@ -44,74 +46,76 @@ const enhance = C =>
     }
   }
 
-function PostTemplate({ pathContext: { previous, next } = {}, data }) {
+function PostTemplate({ pageContext: { previous, next } = {}, data }) {
   const { markdownRemark } = data
   const { frontmatter, html } = markdownRemark
 
   return (
-    <div className="post">
-      <div className="mb-4">
-        <h1>{frontmatter.title}</h1>
-        <h5 className="text-muted">{frontmatter.date}</h5>
-        {frontmatter.tags.length > 0 && (
-          <div className="small">
-            <span className="mr-1">Tags:</span>
-            {frontmatter.tags.map(tag => (
-              <Link
-                key={tag}
-                to={`/tags/${kebabCase(tag)}`}
-                className="ml-1 mr-1"
-              >
-                {tag}
-              </Link>
-            ))}
-          </div>
+    <MainLayout>
+      <div className="post">
+        <div className="mb-4">
+          <h1>{frontmatter.title}</h1>
+          <h5 className="text-muted">{frontmatter.date}</h5>
+          {frontmatter.tags.length > 0 && (
+            <div className="small">
+              <span className="mr-1">Tags:</span>
+              {frontmatter.tags.map(tag => (
+                <Link
+                  key={tag}
+                  to={`/tags/${kebabCase(tag)}`}
+                  className="ml-1 mr-1"
+                >
+                  {tag}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div
+          className="blog-post-content mb-4"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+
+        {(previous || next) && (
+          <Row className="mt-4 pt-4 mb-4 pb-4">
+            <Col xs={12} md={6}>
+              {previous && (
+                <div>
+                  <div className="small text-muted">
+                    <FontAwesome icon="long-arrow-alt-left" /> Previous
+                  </div>
+                  <Link to={previous.path} className="h5 post-link">
+                    {previous.title}
+                  </Link>
+                </div>
+              )}
+            </Col>
+
+            <Col xs={12} md={6} className="text-md-right">
+              {next && (
+                <div>
+                  <div className="small text-muted">
+                    Next <FontAwesome icon="long-arrow-alt-right" />
+                  </div>
+                  <Link to={next.path} className="h5 post-link">
+                    {next.title}
+                  </Link>
+                </div>
+              )}
+            </Col>
+          </Row>
         )}
+
+        {process.env.NODE_ENV === 'production' &&
+          frontmatter.commentsDisabled !== 'true' && (
+            <div className="mt-4 pt-4">
+              <h2 className="mb-4">Comments</h2>
+              <div id="disqus_thread" />
+            </div>
+          )}
       </div>
-
-      <div
-        className="blog-post-content mb-4"
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
-
-      {(previous || next) && (
-        <Row className="mt-4 pt-4 mb-4 pb-4">
-          <Col xs={12} md={6}>
-            {previous && (
-              <div>
-                <div className="small text-muted">
-                  <FontAwesome icon="long-arrow-alt-left" /> Previous
-                </div>
-                <Link to={previous.path} className="h5 post-link">
-                  {previous.title}
-                </Link>
-              </div>
-            )}
-          </Col>
-
-          <Col xs={12} md={6} className="text-md-right">
-            {next && (
-              <div>
-                <div className="small text-muted">
-                  Next <FontAwesome icon="long-arrow-alt-right" />
-                </div>
-                <Link to={next.path} className="h5 post-link">
-                  {next.title}
-                </Link>
-              </div>
-            )}
-          </Col>
-        </Row>
-      )}
-
-      {process.env.NODE_ENV === 'production' &&
-        frontmatter.commentsDisabled !== 'true' && (
-          <div className="mt-4 pt-4">
-            <h2 className="mb-4">Comments</h2>
-            <div id="disqus_thread" />
-          </div>
-        )}
-    </div>
+    </MainLayout>
   )
 }
 

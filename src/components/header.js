@@ -43,7 +43,10 @@ const Header = ({ isOpen, siteTitle, toggle }) => (
           </NavItem>
           <NavItem>
             <NavLink tag={Link} to="/puc">
-              PUC 🇪🇸
+              PUC{' '}
+              <span role="img" aria-label="Spanish">
+                🇪🇸
+              </span>
             </NavLink>
           </NavItem>
           <NavItem>

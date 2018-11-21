@@ -1,8 +1,8 @@
 const path = require('path')
 const { kebabCase, uniq } = require('lodash')
 
-exports.createPages = async ({ boundActionCreators, graphql }) => {
-  const { createPage } = boundActionCreators
+exports.createPages = async ({ actions, graphql }) => {
+  const { createPage } = actions
 
   const PostTemplate = path.resolve(`src/templates/post.js`)
   const PostsTemplate = path.resolve(`src/pages/posts.js`)
